@@ -25,3 +25,5 @@ export type K = {
 export const maxBytesPerLinePerKey = 40;
 export const maxBytesPerLinePerValue = 32;
 export const groupSize = 8;
+
+export const BACKEND_URL = "http://127.0.0.1:56516";

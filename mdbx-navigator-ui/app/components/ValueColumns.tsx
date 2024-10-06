@@ -1,6 +1,6 @@
 import { FC, memo, useCallback } from "react";
 import { useFetcher } from "@remix-run/react";
-import { loader } from "~/routes/value.$tableName.$k.$dupIdx";
+import { clientLoader } from "~/routes/value.$tableName.$k.$dupIdx";
 import CollapsedValue from "./CollapsedValue";
 import ExpandedValue from "./ExpandedValue";
 
@@ -23,7 +23,7 @@ const ValueColumns: FC<ValueColumnsProps> = ({
   maxBytesPerColumn,
   totalLen,
 }) => {
-  const fetcher = useFetcher<typeof loader>();
+  const fetcher = useFetcher<typeof clientLoader>();
 
   const rawCappedV = v.substring(2); // strips "0x"
   const maxDataColumns = Math.ceil(maxBytesPerLine / maxBytesPerColumn);

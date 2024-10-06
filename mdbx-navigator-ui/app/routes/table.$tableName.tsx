@@ -1,11 +1,10 @@
-import { json, LoaderFunctionArgs } from "@remix-run/node";
+import { LoaderFunctionArgs } from "@remix-run/node";
 import { hexlify } from "ethers";
 import invariant from "tiny-invariant";
-import { BACKEND_URL } from "~/entry.server";
-import { DEFAULT_PAGE_SIZE, K, KV } from "~/types";
+import { BACKEND_URL, DEFAULT_PAGE_SIZE, K, KV } from "~/types";
 import ResultsPage from "~/components/ResultsPage";
 
-export const loader = async ({ params }: LoaderFunctionArgs) => {
+export const clientLoader = async ({ params }: LoaderFunctionArgs) => {
   invariant(params.tableName !== undefined, "Missing table name");
 
   // TODO: add page size here
@@ -32,11 +31,11 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     next = ret[ret.length - 1];
   }
 
-  return json({
+  return {
     data: ret,
     previous: undefined,
     next,
-  });
+  };
 };
 
 export default ResultsPage;
