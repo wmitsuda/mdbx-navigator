@@ -4,6 +4,7 @@ import (
 	"github.com/erigontech/mdbx-go/mdbx"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/wmitsuda/mdbx-navigator-svc/mdbxnav"
 )
 
@@ -17,11 +18,18 @@ func (be *Backend) CreateRouter() (chi.Router, error) {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.Get("/tables", be.AllTables)
-	r.Get("/table/{table}/forward", be.TableForward)
-	r.Get("/table/{table}/backward", be.TableBackward)
-	r.Get("/table/{table}/search", be.TableSearch)
-	r.Get("/table/{table}/value", be.GetValue)
+	corsConfig := cors.Handler(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET"},
+		MaxAge:         300,
+	})
+	r.Use(corsConfig)
+
+	r.Get("/api/tables", be.AllTables)
+	r.Get("/api/table/{table}/forward", be.TableForward)
+	r.Get("/api/table/{table}/backward", be.TableBackward)
+	r.Get("/api/table/{table}/search", be.TableSearch)
+	r.Get("/api/table/{table}/value", be.GetValue)
 
 	return r, nil
 }
