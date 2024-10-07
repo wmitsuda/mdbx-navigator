@@ -14,9 +14,12 @@ This software is split into 2 parts:
 - an UI that consumes those APIs and allows read-only interactions using a regular web browser.
   - The UI is now embedded and served from the backend binary, but it can be run separately during development.
 
-### Building the UI
+### Build
 
-The UI is a Remix SPA React app. In order to run the development version, first you need to install [nvm](https://github.com/nvm-sh/nvm).
+Make sure you have installed:
+
+- Go toolchain + goreleaser
+- [nvm](https://github.com/nvm-sh/nvm)
 
 Once `nvm` is installed, inside the `web` directory, run:
 
@@ -26,31 +29,18 @@ nvm install
 
 This will install and select the proper `nodejs` version.
 
-Install all required project dependencies:
+Now build the go binary for your platform/architecture by running at the root of this repo:
 
 ```shell
-npm ci
+goreleaser build --snapshot --clean --single-target
 ```
 
-Build a production build:
+The binary will be available at `./dist/mdbx-navigator_<architecture>` dir.
+
+From inside that directory, run:
 
 ```shell
-npm run build
-```
-
-### Building and running the backend
-
-The backend is the main project of this repo.
-
-It is a regular golang service, it uses [mdbx-go](https://github.com/erigontech/mdbx-go) bindings to access any mdbx database.
-
-It exposes a set of REST APIs + serves the frontend. The details doesn't matter unless you intend to study/modify the code.
-
-The easiest way to run it is:
-
-```shell
-go install
-mdbx-navigator --data <path-to-your-mdbx.dat-file>
+./mdbx-navigator --data <path-to-your-mdbx.dat-file>
 ```
 
 It will open the database as read-only in exclusive mode. The frontend will be available at `http://127.0.0.1:56516`.
