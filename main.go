@@ -85,7 +85,7 @@ func mainAction(cCtx *cli.Context) error {
 	}
 
 	addr := fmt.Sprintf("%s:%d", cCtx.String("host"), cCtx.Uint("port"))
-	log.Printf("Listening to: %s", addr)
+	log.Printf("Listening to: http://%s", addr)
 	if err := http.ListenAndServe(addr, r); err != nil {
 		return err
 	}
