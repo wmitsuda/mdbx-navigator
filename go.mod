@@ -1,4 +1,4 @@
-module github.com/wmitsuda/mdbx-navigator-svc
+module github.com/wmitsuda/mdbx-navigator
 
 go 1.22.5
 

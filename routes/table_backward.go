@@ -9,10 +9,10 @@ import (
 	"net/http"
 
 	"github.com/erigontech/mdbx-go/mdbx"
-	"github.com/wmitsuda/mdbx-navigator-svc/mdbxnav"
+	"github.com/wmitsuda/mdbx-navigator/mdbxnav"
 )
 
-func (be *Backend) TableForward(w http.ResponseWriter, r *http.Request) {
+func (be *Backend) TableBackward(w http.ResponseWriter, r *http.Request) {
 	tableName, keyBytes, dupIdxInt, pageSizeInt, err := readParams(w, r)
 	if err != nil {
 		// err already handled inside readParams
@@ -67,7 +67,7 @@ func (be *Backend) TableForward(w http.ResponseWriter, r *http.Request) {
 				idx = dupIdxInt
 			}
 		} else {
-			k, v, err = cursor.Get(nil, nil, mdbx.First)
+			k, v, err = cursor.Get(nil, nil, mdbx.Last)
 			if err != nil {
 				if mdbx.IsNotFound(err) {
 					if err := json.NewEncoder(w).Encode([]*mdbxnav.KVResult{}); err != nil {
@@ -77,9 +77,15 @@ func (be *Backend) TableForward(w http.ResponseWriter, r *http.Request) {
 				}
 				return err
 			}
+
+			dupC, err := cursor.Count()
+			if err != nil {
+				return err
+			}
+			idx = int(dupC - 1)
 		}
 
-		ret, err := be.readForward(cursor, k, v, idx, pageSizeInt)
+		ret, err := be.readBackward(cursor, k, v, idx, pageSizeInt)
 		if err != nil {
 			return err
 		}
@@ -99,11 +105,11 @@ func (be *Backend) TableForward(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Traverse the cursor forward up to maxResults or EOF.
+// Traverse the cursor backward up to maxResults or beginning of table.
 //
 // It assumes the current cursor position corresponds to the first matching
 // result and their values are already read at k/v/idx.
-func (be *Backend) readForward(cursor *mdbx.Cursor, k, v []byte, idx int, maxResults int) ([]*mdbxnav.KVResult, error) {
+func (be *Backend) readBackward(cursor *mdbx.Cursor, k, v []byte, idx int, maxResults int) ([]*mdbxnav.KVResult, error) {
 	ret := make([]*mdbxnav.KVResult, 0, maxResults)
 
 	prevK := make([]byte, len(k))
@@ -122,7 +128,7 @@ func (be *Backend) readForward(cursor *mdbx.Cursor, k, v []byte, idx int, maxRes
 		})
 
 		var err error
-		k, v, err = cursor.Get(nil, nil, mdbx.Next)
+		k, v, err = cursor.Get(nil, nil, mdbx.Prev)
 		if err != nil {
 			if mdbx.IsNotFound(err) {
 				break
@@ -131,13 +137,20 @@ func (be *Backend) readForward(cursor *mdbx.Cursor, k, v []byte, idx int, maxRes
 		}
 
 		if bytes.Equal(prevK, k) {
-			idx++
+			idx--
 		} else {
-			idx = 0
+			dupC, err := cursor.Count()
+			if err != nil {
+				return nil, err
+			}
+			idx = int(dupC - 1)
 			prevK = make([]byte, len(k))
 			copy(prevK, k)
 		}
 	}
 
+	for i, j := 0, len(ret)-1; i < j; i, j = i+1, j-1 {
+		ret[i], ret[j] = ret[j], ret[i]
+	}
 	return ret, nil
 }

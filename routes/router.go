@@ -1,11 +1,15 @@
 package routes
 
 import (
+	"io/fs"
+	"net/http"
+
 	"github.com/erigontech/mdbx-go/mdbx"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/wmitsuda/mdbx-navigator-svc/mdbxnav"
+	"github.com/wmitsuda/mdbx-navigator/mdbxnav"
+	"github.com/wmitsuda/mdbx-navigator/web"
 )
 
 type Backend struct {
@@ -30,6 +34,12 @@ func (be *Backend) CreateRouter() (chi.Router, error) {
 	r.Get("/api/table/{table}/backward", be.TableBackward)
 	r.Get("/api/table/{table}/search", be.TableSearch)
 	r.Get("/api/table/{table}/value", be.GetValue)
+
+	dir, err := fs.Sub(web.FS, "build/client")
+	if err != nil {
+		return nil, err
+	}
+	r.Handle("/*", http.FileServer(http.FS(dir)))
 
 	return r, nil
 }

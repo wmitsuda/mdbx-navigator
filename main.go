@@ -9,8 +9,8 @@ import (
 
 	"github.com/erigontech/mdbx-go/mdbx"
 	"github.com/urfave/cli/v2"
-	"github.com/wmitsuda/mdbx-navigator-svc/mdbxnav"
-	"github.com/wmitsuda/mdbx-navigator-svc/routes"
+	"github.com/wmitsuda/mdbx-navigator/mdbxnav"
+	"github.com/wmitsuda/mdbx-navigator/routes"
 )
 
 func main() {
