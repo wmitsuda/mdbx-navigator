@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/wmitsuda/mdbx-navigator-svc/mdbxnav"
+	"github.com/wmitsuda/mdbx-navigator/mdbxnav"
 )
 
 // Returns the preloaded table schema sorted byy table name

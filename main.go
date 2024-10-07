@@ -9,8 +9,8 @@ import (
 
 	"github.com/erigontech/mdbx-go/mdbx"
 	"github.com/urfave/cli/v2"
-	"github.com/wmitsuda/mdbx-navigator-svc/mdbxnav"
-	"github.com/wmitsuda/mdbx-navigator-svc/routes"
+	"github.com/wmitsuda/mdbx-navigator/mdbxnav"
+	"github.com/wmitsuda/mdbx-navigator/routes"
 )
 
 func main() {
@@ -85,7 +85,7 @@ func mainAction(cCtx *cli.Context) error {
 	}
 
 	addr := fmt.Sprintf("%s:%d", cCtx.String("host"), cCtx.Uint("port"))
-	log.Printf("Listening to: %s", addr)
+	log.Printf("Listening to: http://%s", addr)
 	if err := http.ListenAndServe(addr, r); err != nil {
 		return err
 	}

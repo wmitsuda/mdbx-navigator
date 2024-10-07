@@ -27,7 +27,7 @@ type Page = {
   next: K | undefined;
 };
 
-const hexRegexp = /^0x[\da-fA-F]+$/
+const hexRegexp = /^0x[\da-fA-F]+$/;
 
 type T = (_: LoaderFunctionArgs) => ReturnType<typeof json<Page>>;
 
@@ -58,7 +58,9 @@ const ResultsPage: FC = () => {
               className="rounded-r border-b border-r border-t border-gray-300 px-2 py-1 text-sm text-gray-500 disabled:bg-gray-100 disabled:text-gray-300"
               type="submit"
               value="Go"
-              disabled={navigation.state === "submitting" || !query.match(hexRegexp)}
+              disabled={
+                navigation.state === "submitting" || !query.match(hexRegexp)
+              }
             />
           </Form>
         </div>

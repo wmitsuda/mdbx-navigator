@@ -10,7 +10,7 @@ import (
 
 	"github.com/erigontech/mdbx-go/mdbx"
 	"github.com/go-chi/chi/v5"
-	"github.com/wmitsuda/mdbx-navigator-svc/mdbxnav"
+	"github.com/wmitsuda/mdbx-navigator/mdbxnav"
 )
 
 func (be *Backend) GetValue(w http.ResponseWriter, r *http.Request) {

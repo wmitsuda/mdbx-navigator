@@ -1,10 +1,11 @@
-module github.com/wmitsuda/mdbx-navigator-svc
+module github.com/wmitsuda/mdbx-navigator
 
 go 1.22.5
 
 require (
 	github.com/erigontech/mdbx-go v0.38.4
 	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/cors v1.2.1
 	github.com/urfave/cli/v2 v2.27.2
 )
 

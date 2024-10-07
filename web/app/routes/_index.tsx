@@ -1,8 +1,7 @@
 import { Await, defer, useLoaderData } from "@remix-run/react";
 import { FC, Suspense } from "react";
 import Tables from "~/components/Tables";
-import { BACKEND_URL } from "~/entry.server";
-import { TableEntry } from "~/types";
+import { BACKEND_URL, TableEntry } from "~/types";
 
 const getTables = async () => {
   const entries: TableEntry[] = [];
@@ -24,14 +23,14 @@ const getTables = async () => {
   return Promise.resolve(entries);
 };
 
-export const loader = async () => {
+export const clientLoader = async () => {
   return defer({
     entries: getTables(),
   });
 };
 
 const Database: FC = () => {
-  const { entries } = useLoaderData<typeof loader>();
+  const { entries } = useLoaderData<typeof clientLoader>();
 
   return (
     <Suspense fallback={<div>Loading</div>}>

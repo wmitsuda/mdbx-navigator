@@ -12,7 +12,7 @@ import (
 
 	"github.com/erigontech/mdbx-go/mdbx"
 	"github.com/go-chi/chi/v5"
-	"github.com/wmitsuda/mdbx-navigator-svc/mdbxnav"
+	"github.com/wmitsuda/mdbx-navigator/mdbxnav"
 )
 
 func readSearchKey(w http.ResponseWriter, r *http.Request) ([]byte, error) {
@@ -130,6 +130,7 @@ func (be *Backend) readSearchForward(cursor *mdbx.Cursor, k, v []byte, idx int, 
 		capped := v[:]
 		if len(v) > int(be.ValueLength) {
 			capped = v[:be.ValueLength]
+
 		}
 		ret = append(ret, &mdbxnav.KVResult{
 			K:       "0x" + hex.EncodeToString(k),

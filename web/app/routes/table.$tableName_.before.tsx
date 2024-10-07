@@ -1,11 +1,10 @@
-import { json, LoaderFunctionArgs } from "@remix-run/node";
+import { LoaderFunctionArgs } from "@remix-run/node";
 import { hexlify, isHexString } from "ethers";
 import invariant from "tiny-invariant";
 import ResultsPage from "~/components/ResultsPage";
-import { BACKEND_URL } from "~/entry.server";
-import { DEFAULT_PAGE_SIZE, K, KV } from "~/types";
+import { BACKEND_URL, DEFAULT_PAGE_SIZE, K, KV } from "~/types";
 
-export const loader = async ({ params, request }: LoaderFunctionArgs) => {
+export const clientLoader = async ({ params, request }: LoaderFunctionArgs) => {
   invariant(params.tableName !== undefined, "Missing table name");
 
   const url = new URL(request.url);
@@ -28,20 +27,23 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const pageSize = DEFAULT_PAGE_SIZE;
   const recordsToRead = pageSize + readAhead;
   const data = await fetch(
-    `${BACKEND_URL}/table/${params.tableName}/forward?key=${key}&dupidx=${dupIdx}&pagesize=${recordsToRead}`,
+    `${BACKEND_URL}/table/${params.tableName}/backward?key=${key}&dupidx=${dupIdx}&pagesize=${recordsToRead}`,
   );
   const j = await data.json();
 
   const ret: KV[] = [];
-  // first elem must match start point
-  const e = j[0];
+  const e = j[j.length - 1];
   invariant(e.k === key, `start key does not match: ${e.k}, expected: ${key}`);
   invariant(
     e.dupIdx.toString() === dupIdx,
     `start dupIdx does not match: ${e.dupIdx}, expected: ${dupIdx}`,
   );
 
-  for (let i = 1, count = 0; i < j.length && count < pageSize; i++, count++) {
+  for (
+    let i = j.length - 2, count = 0;
+    i >= 0 && count < pageSize;
+    i--, count++
+  ) {
     const e = j[i];
 
     ret.push({
@@ -51,17 +53,18 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
       dupIdx: e.dupIdx,
     });
   }
-  const previous = ret[0];
-  let next: K | undefined;
-  if (j.length > pageSize + 1) {
-    next = ret[ret.length - 1];
-  }
 
-  return json({
-    data: ret,
+  let previous: K | undefined;
+  if (j.length > pageSize + 1) {
+    previous = ret[ret.length - 1];
+  }
+  const next = ret[0];
+
+  return {
+    data: ret.reverse(),
     previous,
     next,
-  });
+  };
 };
 
 export default ResultsPage;

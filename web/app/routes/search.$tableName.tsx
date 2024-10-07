@@ -1,12 +1,10 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/react";
 import { hexlify, isHexString } from "ethers";
 import invariant from "tiny-invariant";
-import { BACKEND_URL } from "~/entry.server";
-import { DEFAULT_PAGE_SIZE, K, KV } from "~/types";
+import { BACKEND_URL, DEFAULT_PAGE_SIZE, K, KV } from "~/types";
 import ResultsPage from "./table.$tableName";
 
-export const loader = async ({ params, request }: LoaderFunctionArgs) => {
+export const clientLoader = async ({ params, request }: LoaderFunctionArgs) => {
   invariant(params.tableName !== undefined, "Missing table name");
 
   const url = new URL(request.url);
@@ -41,11 +39,11 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     next = ret[ret.length - 1];
   }
 
-  return json({
+  return {
     data: ret,
     previous: ret[0],
     next,
-  });
+  };
 };
 
 export default ResultsPage;
