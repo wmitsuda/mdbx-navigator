@@ -49,21 +49,29 @@ doc/                    Screenshot used by README
 - **Go** 1.22.5 with **CGO enabled** — `mdbx-go` is a cgo binding, so a working
   C toolchain is required and `CGO_ENABLED=1` must be set. Pure-Go cross
   compilation will not work.
-- **Node** 20.10.0 (pinned in `web/.nvmrc`; run `nvm install` inside `web/`).
+- **Node** 24.16.0 (pinned in `web/.nvmrc`; run `nvm install` inside `web/`).
+- **pnpm** is the package manager (not npm). Install it standalone or via
+  `corepack enable`. The frontend has a committed `web/pnpm-lock.yaml`.
 - **goreleaser** for producing the embedded single-binary build.
 
 ### Full binary (frontend embedded)
 ```shell
 goreleaser build --snapshot --clean --single-target
 ```
-goreleaser's `before` hooks run `go mod tidy`, `npm --prefix web ci`, and
-`npm --prefix web run build` first, then builds the Go binary. The output lands
-in `./dist/mdbx-navigator_<arch>/`.
+goreleaser's `before` hooks run `go mod tidy`, `pnpm --dir web install
+--frozen-lockfile`, and `pnpm --dir web run build` first, then builds the Go
+binary. The output lands in `./dist/mdbx-navigator_<arch>/`.
 
 > Important: the Go build embeds `web/build/client` via `//go:embed all:build/client`.
 > A plain `go build ./...` **fails** unless that directory exists. Build the
-> frontend first (`npm --prefix web run build`) or use goreleaser, which does it
+> frontend first (`pnpm --dir web run build`) or use goreleaser, which does it
 > for you.
+
+The build needs network access (npm registry for `pnpm install`, the Go module
+proxy for `go mod tidy`). goreleaser currently logs two `DEPRECATED` warnings for
+`archives.format` / `archives.format_overrides.format` in `.goreleaser.yaml`;
+they are harmless today but should be migrated per
+<https://goreleaser.com/deprecations>.
 
 ### Run
 ```shell
@@ -80,15 +88,27 @@ The DB is opened **read-only in exclusive mode** with `OptMaxDB = 1000`. The app
 is browse-only by design — do not add write paths. The UI is served at
 `http://127.0.0.1:56516/`.
 
+> Exclusive mode means the open **fails if another process already holds the
+> file** (e.g. a running Erigon node). Stop the writer first, or point `--data`
+> at a copy/snapshot. On startup the backend enumerates every DBI and logs one
+> `found table: name=… entries=…` line per table, then `Loaded N tables`. Real
+> Erigon chaindata has ~100+ tables, many with `entries=0` — that is normal, and
+> `forward`/`backward`/`search` on an empty table just return `[]`.
+
 ### Frontend-only dev loop (inside `web/`)
 ```shell
-npm run dev        # Vite dev server (Remix SPA)
-npm run build      # production build → build/client (what gets embedded)
-npm run lint       # eslint
-npm run typecheck  # tsc --noEmit
+pnpm install       # restore deps from pnpm-lock.yaml
+pnpm run dev       # Vite dev server (Remix SPA)
+pnpm run build     # production build → build/client (what gets embedded)
+pnpm run lint      # eslint
+pnpm run typecheck # tsc --noEmit
 ```
 Run a backend separately (`go run . --data <file>` after building the frontend,
 or point at an existing binary) so the dev UI has an API to call.
+
+> `esbuild` runs an install script, which pnpm blocks by default. It is
+> explicitly allowed in `web/pnpm-workspace.yaml` (`allowBuilds: esbuild: true`);
+> without that, `pnpm run build` fails its pre-run dependency check.
 
 ## Conventions & gotchas
 

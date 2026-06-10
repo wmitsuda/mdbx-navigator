@@ -1,0 +1,4 @@
+# pnpm settings (the new home for the former package.json "pnpm" field).
+# Allow esbuild to run its install script; Vite/Remix need its platform binary.
+allowBuilds:
+  esbuild: true

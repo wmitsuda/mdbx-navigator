@@ -3,8 +3,8 @@ version: 2
 before:
   hooks:
     - go mod tidy
-    - npm --prefix web ci
-    - npm --prefix web run build
+    - pnpm --dir web install --frozen-lockfile
+    - pnpm --dir web run build
 
 builds:
   - env:

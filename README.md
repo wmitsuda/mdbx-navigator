@@ -20,6 +20,7 @@ Make sure you have installed:
 
 - Go toolchain + goreleaser
 - [nvm](https://github.com/nvm-sh/nvm)
+- [pnpm](https://pnpm.io/) (the frontend package manager; `corepack enable` also works)
 
 Once `nvm` is installed, inside the `web` directory, run:
 
@@ -27,7 +28,7 @@ Once `nvm` is installed, inside the `web` directory, run:
 nvm install
 ```
 
-This will install and select the proper `nodejs` version.
+This will install and select the proper `nodejs` version (see `web/.nvmrc`).
 
 Now build the go binary for your platform/architecture by running at the root of this repo:
 
