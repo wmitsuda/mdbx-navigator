@@ -67,12 +67,6 @@ binary. The output lands in `./dist/mdbx-navigator_<arch>/`.
 > frontend first (`pnpm --dir web run build`) or use goreleaser, which does it
 > for you.
 
-The build needs network access (npm registry for `pnpm install`, the Go module
-proxy for `go mod tidy`). goreleaser currently logs two `DEPRECATED` warnings for
-`archives.format` / `archives.format_overrides.format` in `.goreleaser.yaml`;
-they are harmless today but should be migrated per
-<https://goreleaser.com/deprecations>.
-
 ### Run
 ```shell
 ./mdbx-navigator --data <path-to-your-mdbx.dat>
@@ -90,10 +84,9 @@ is browse-only by design — do not add write paths. The UI is served at
 
 > Exclusive mode means the open **fails if another process already holds the
 > file** (e.g. a running Erigon node). Stop the writer first, or point `--data`
-> at a copy/snapshot. On startup the backend enumerates every DBI and logs one
-> `found table: name=… entries=…` line per table, then `Loaded N tables`. Real
-> Erigon chaindata has ~100+ tables, many with `entries=0` — that is normal, and
-> `forward`/`backward`/`search` on an empty table just return `[]`.
+> at a copy/snapshot. Real Erigon chaindata has ~100+ tables, many with
+> `entries=0` — that is normal, and `forward`/`backward`/`search` on an empty
+> table just return `[]`.
 
 ### Frontend-only dev loop (inside `web/`)
 ```shell
