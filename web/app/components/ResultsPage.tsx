@@ -1,12 +1,10 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
-  json,
   NavLink,
   useLoaderData,
   useNavigation,
   useParams,
-} from "@remix-run/react";
+} from "react-router";
 import { FC, useState } from "react";
 import invariant from "tiny-invariant";
 import {
@@ -29,10 +27,8 @@ type Page = {
 
 const hexRegexp = /^0x[\da-fA-F]+$/;
 
-type T = (_: LoaderFunctionArgs) => ReturnType<typeof json<Page>>;
-
 const ResultsPage: FC = () => {
-  const { data, previous, next } = useLoaderData<T>();
+  const { data, previous, next } = useLoaderData<Page>();
   const navigation = useNavigation();
   const { tableName } = useParams();
   invariant(tableName !== undefined);
@@ -55,7 +51,7 @@ const ResultsPage: FC = () => {
               onChange={(e) => setQuery(e.target.value)}
             />
             <input
-              className="rounded-r border-b border-r border-t border-gray-300 px-2 py-1 text-sm text-gray-500 disabled:bg-gray-100 disabled:text-gray-300"
+              className="rounded-r border-t border-r border-b border-gray-300 px-2 py-1 text-sm text-gray-500 disabled:bg-gray-100 disabled:text-gray-300"
               type="submit"
               value="Go"
               disabled={

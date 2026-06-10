@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"log"
@@ -8,52 +9,53 @@ import (
 	"os"
 
 	"github.com/erigontech/mdbx-go/mdbx"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"github.com/wmitsuda/mdbx-navigator/mdbxnav"
 	"github.com/wmitsuda/mdbx-navigator/routes"
 )
 
 func main() {
-	app := cli.NewApp()
-	app.Usage = "Backend service for mdbx-navigator UI"
-	app.Flags = []cli.Flag{
-		&cli.StringFlag{
-			Name:     "data",
-			Required: true,
-			Usage:    "path to the mdbx.dat",
+	cmd := &cli.Command{
+		Usage: "Backend service for mdbx-navigator UI",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "data",
+				Required: true,
+				Usage:    "path to the mdbx.dat",
+			},
+			&cli.StringFlag{
+				Name:  "host",
+				Value: "127.0.0.1",
+				Usage: "IP address to bind the API to",
+			},
+			&cli.UintFlag{
+				Name:  "port",
+				Value: 56516,
+				Usage: "port to bind the API to",
+			},
+			&cli.UintFlag{
+				Name:  "lengthcap",
+				Value: 32,
+				Usage: "max length for value search results",
+			},
 		},
-		&cli.StringFlag{
-			Name:  "host",
-			Value: "127.0.0.1",
-			Usage: "IP address to bind the API to",
-		},
-		&cli.UintFlag{
-			Name:  "port",
-			Value: 56516,
-			Usage: "port to bind the API to",
-		},
-		&cli.UintFlag{
-			Name:  "lengthcap",
-			Value: 32,
-			Usage: "max length for value search results",
-		},
+		Action: mainAction,
 	}
-	app.Action = mainAction
 
-	if err := app.Run(os.Args); err != nil {
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func mainAction(cCtx *cli.Context) error {
-	data := cCtx.String("data")
+func mainAction(ctx context.Context, cmd *cli.Command) error {
+	data := cmd.String("data")
 	log.Printf("Using data: %s", data)
 
-	valueLength := cCtx.Uint("lengthcap")
+	valueLength := cmd.Uint("lengthcap")
 	log.Printf("Using value length cap: %d", valueLength)
 
 	log.Println("Opening data file...")
-	env, err := mdbx.NewEnv()
+	env, err := mdbx.NewEnv(mdbx.Default)
 	if err != nil {
 		return err
 	}
@@ -77,14 +79,14 @@ func mainAction(cCtx *cli.Context) error {
 	be := &routes.Backend{
 		Env:         env,
 		Tables:      tables,
-		ValueLength: valueLength,
+		ValueLength: uint(valueLength),
 	}
 	r, err := be.CreateRouter()
 	if err != nil {
 		return err
 	}
 
-	addr := fmt.Sprintf("%s:%d", cCtx.String("host"), cCtx.Uint("port"))
+	addr := fmt.Sprintf("%s:%d", cmd.String("host"), cmd.Uint("port"))
 	log.Printf("Listening to: http://%s", addr)
 	if err := http.ListenAndServe(addr, r); err != nil {
 		return err

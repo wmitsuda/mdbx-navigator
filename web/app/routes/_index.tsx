@@ -1,4 +1,4 @@
-import { Await, defer, useLoaderData } from "@remix-run/react";
+import { Await, useLoaderData } from "react-router";
 import { FC, Suspense } from "react";
 import Tables from "~/components/Tables";
 import { BACKEND_URL, TableEntry } from "~/types";
@@ -24,9 +24,11 @@ const getTables = async () => {
 };
 
 export const clientLoader = async () => {
-  return defer({
+  // React Router v7 streams raw promises returned from a loader — no `defer`
+  // wrapper needed; <Await> below resolves it.
+  return {
     entries: getTables(),
-  });
+  };
 };
 
 const Database: FC = () => {

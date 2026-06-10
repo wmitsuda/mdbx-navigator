@@ -20,7 +20,7 @@ const Results: FC<ResultsProps> = ({
 }) => (
   <table className="min-w-max table-fixed">
     <thead>
-      <tr className="border-b border-t border-gray-300">
+      <tr className="border-t border-b border-gray-300">
         <th
           className="px-2 py-1 text-start"
           colSpan={1 + Math.ceil(maxBytesPerLinePerKey / groupSize) + 1}

@@ -1,5 +1,5 @@
 import { Switch } from "@headlessui/react";
-import { NavLink } from "@remix-run/react";
+import { NavLink } from "react-router";
 import { FC, useMemo, useState } from "react";
 import { TableEntry } from "~/types";
 import Header from "./Header";
@@ -50,7 +50,7 @@ const Tables: FC<TablesProps> = ({ tables }) => {
 
       <table className="my-2">
         <thead>
-          <tr className="border-b border-t border-gray-300">
+          <tr className="border-t border-b border-gray-300">
             <th className="w-72 px-2 py-1 text-start">Name</th>
             <th className="w-32 border-l px-2 py-1 text-end">Entries</th>
             <th className="w-32 border-l px-2 py-1 text-end">Page Size</th>

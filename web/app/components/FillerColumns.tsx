@@ -9,7 +9,7 @@ const FillerColumns: FC<FillerColumnsProps> = ({ n, maxBytesPerColumn }) => (
   <>
     {[...Array(n)].map((_, i) => (
       <td key={i} className="border-l border-gray-300 px-1">
-        <span className="whitespace-pre font-mono">
+        <span className="font-mono whitespace-pre">
           {"".padStart(maxBytesPerColumn * 2, " ")}
         </span>
       </td>

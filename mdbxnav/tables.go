@@ -25,7 +25,7 @@ func ReadTables(env *mdbx.Env) (map[string]*Table, error) {
 			return err
 		}
 		for k != nil {
-			tableDBI, err := txn.OpenDBI(string(k), 0, nil, nil)
+			tableDBI, err := txn.OpenDBI(string(k), mdbx.DBAccede, nil, nil)
 			if err != nil {
 				return err
 			}

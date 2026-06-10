@@ -1,4 +1,9 @@
 # pnpm settings (the new home for the former package.json "pnpm" field).
-# Allow esbuild to run its install script; Vite/Remix need its platform binary.
+# Allow native/platform packages to run their install (build) scripts:
+#   - esbuild: platform binary used by Vite.
+#   - @tailwindcss/oxide: native engine used by Tailwind v4.
+#   - unrs-resolver: native resolver used by eslint-import-resolver-typescript v4.
 allowBuilds:
   esbuild: true
+  "@tailwindcss/oxide": true
+  unrs-resolver: true

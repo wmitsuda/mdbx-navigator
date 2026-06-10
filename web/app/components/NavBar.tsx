@@ -1,4 +1,4 @@
-import { NavLink } from "@remix-run/react";
+import { NavLink } from "react-router";
 import { FC, memo } from "react";
 import { K } from "~/types";
 

@@ -1,10 +1,13 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+import { ClientLoaderFunctionArgs } from "react-router";
 import { hexlify, isHexString } from "ethers";
 import invariant from "tiny-invariant";
 import ResultsPage from "~/components/ResultsPage";
 import { BACKEND_URL, DEFAULT_PAGE_SIZE, K, KV } from "~/types";
 
-export const clientLoader = async ({ params, request }: LoaderFunctionArgs) => {
+export const clientLoader = async ({
+  params,
+  request,
+}: ClientLoaderFunctionArgs) => {
   invariant(params.tableName !== undefined, "Missing table name");
 
   const url = new URL(request.url);

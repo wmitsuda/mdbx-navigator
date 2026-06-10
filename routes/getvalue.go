@@ -24,7 +24,7 @@ func (be *Backend) GetValue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := be.Env.View(func(txn *mdbx.Txn) error {
-		tableDBI, err := txn.OpenDBISimple(tableName, 0)
+		tableDBI, err := txn.OpenDBISimple(tableName, mdbx.DBAccede)
 		if err != nil {
 			return err
 		}

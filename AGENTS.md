@@ -11,10 +11,10 @@ that ship as a **single binary**:
 
 - A **Go backend** that opens an `mdbx.dat` file from the local filesystem
   (read-only, exclusive mode) and exposes the raw KV data over a small REST API.
-- A **Remix / React frontend** (SPA) that consumes those APIs and renders a
-  read-only browser. In production the built frontend is embedded into the Go
-  binary via `go:embed` and served by the same process; during development it
-  can be run separately against the backend.
+- A **React Router 7 / React frontend** (SPA, framework mode) that consumes
+  those APIs and renders a read-only browser. In production the built frontend
+  is embedded into the Go binary via `go:embed` and served by the same process;
+  during development it can be run separately against the backend.
 
 Everything the UI shows is raw bytes rendered as `0x…` hex strings — there is no
 schema interpretation of keys/values.
@@ -22,7 +22,7 @@ schema interpretation of keys/values.
 ## Repository layout
 
 ```
-main.go                 CLI entrypoint (urfave/cli): flags, opens the env, starts the HTTP server
+main.go                 CLI entrypoint (urfave/cli v3): flags, opens the env, starts the HTTP server
 mdbxnav/                Core mdbx reading logic, decoupled from HTTP
   types.go              Table / KVResult / ValueResult structs (JSON-tagged)
   tables.go             ReadTables: enumerates DBIs + per-table stats at startup
@@ -34,10 +34,15 @@ routes/                 chi HTTP handlers (Backend struct + REST endpoints)
   table_search.go       GET /api/table/{table}/search   (prefix / range search)
   getvalue.go           GET /api/table/{table}/value     (single full value)
   util.go               Shared query-param parsing (readParams / readKey)
-web/                    Frontend (Remix SPA + Tailwind)
+web/                    Frontend (React Router 7 SPA + Tailwind v4)
   static.go             package web — go:embed all:build/client → web.FS
-  app/routes/           Remix file-based routes (clientLoader-only, ssr disabled)
+  react-router.config.ts  React Router framework config (ssr: false → SPA mode)
+  vite.config.ts        Vite 8 + @react-router/dev + @tailwindcss/vite plugins
+  eslint.config.mjs     Flat ESLint config (ESLint 9)
+  app/routes.ts         Route manifest (flatRoutes() — keeps the app/routes/ file convention)
+  app/routes/           File-based routes (clientLoader-only, ssr disabled)
   app/components/       UI components (Results, NavBar, hex rendering, etc.)
+  app/tailwind.css      Tailwind v4 entry (@import "tailwindcss" + @theme overrides)
   app/types.ts          Shared TS types + constants (incl. BACKEND_URL)
 .goreleaser.yaml        Release/build config; embeds the frontend into the binary
 doc/                    Screenshot used by README
@@ -46,9 +51,9 @@ doc/                    Screenshot used by README
 ## Build, run, and dev workflows
 
 ### Toolchain
-- **Go** 1.22.5 with **CGO enabled** — `mdbx-go` is a cgo binding, so a working
+- **Go** 1.26.x with **CGO enabled** — `mdbx-go` is a cgo binding, so a working
   C toolchain is required and `CGO_ENABLED=1` must be set. Pure-Go cross
-  compilation will not work.
+  compilation will not work. (The `go` directive in `go.mod` is `1.26.4`.)
 - **Node** 24.16.0 (pinned in `web/.nvmrc`; run `nvm install` inside `web/`).
 - **pnpm** is the package manager (not npm). Install it standalone or via
   `corepack enable`. The frontend has a committed `web/pnpm-lock.yaml`.
@@ -91,17 +96,20 @@ is browse-only by design — do not add write paths. The UI is served at
 ### Frontend-only dev loop (inside `web/`)
 ```shell
 pnpm install       # restore deps from pnpm-lock.yaml
-pnpm run dev       # Vite dev server (Remix SPA)
+pnpm run dev       # React Router dev server (Vite)
 pnpm run build     # production build → build/client (what gets embedded)
-pnpm run lint      # eslint
-pnpm run typecheck # tsc --noEmit
+pnpm run lint      # eslint (flat config)
+pnpm run typecheck # react-router typegen && tsc
 ```
 Run a backend separately (`go run . --data <file>` after building the frontend,
 or point at an existing binary) so the dev UI has an API to call.
 
-> `esbuild` runs an install script, which pnpm blocks by default. It is
-> explicitly allowed in `web/pnpm-workspace.yaml` (`allowBuilds: esbuild: true`);
-> without that, `pnpm run build` fails its pre-run dependency check.
+> Some native packages run install scripts that pnpm blocks by default. They are
+> explicitly allowed in `web/pnpm-workspace.yaml` under `allowBuilds`: `esbuild`
+> (Vite's platform binary), `@tailwindcss/oxide` (Tailwind v4's engine), and
+> `unrs-resolver` (the resolver behind `eslint-import-resolver-typescript`).
+> Without those entries, `pnpm install` / `pnpm run build` fail their dependency
+> check.
 
 ## Conventions & gotchas
 
@@ -114,12 +122,22 @@ or point at an existing binary) so the dev UI has an API to call.
   handlers advance the cursor `dupIdx` times to reach a specific duplicate. Keep
   this in mind when touching cursor logic — forward and backward index
   bookkeeping are mirror images and easy to get subtly wrong.
+- **Opening DBIs (`mdbx.DBAccede`).** Tables are opened for reading with the
+  `mdbx.DBAccede` flag (`txn.OpenDBI(name, mdbx.DBAccede, …)` /
+  `OpenDBISimple(name, mdbx.DBAccede)`), **not** `0`. libmdbx persists a table's
+  flags (e.g. `DupSort`), and (since the mdbx-go v0.40 bump) opening an existing
+  dupsort table with `0` fails with `MDBX_INCOMPATIBLE`. `DBAccede` means "adopt
+  the flags the DB was created with", so dupsort tables get their dupsort cursor
+  semantics. Do not revert these to `0`.
 - **Pagination.** Loaders fetch `pageSize + 1` (or `+2` when resuming from a
   cursor position) rows on purpose, to detect whether a next page exists without
   a separate count. See `web/app/routes/*` and `DEFAULT_PAGE_SIZE` in `types.ts`.
-- **Frontend is SPA-only.** Remix runs with `ssr: false`; routes use
-  `clientLoader` (not server `loader`) and there is no Node server in production —
-  the Go binary serves the static client build and the API.
+- **Frontend is SPA-only.** React Router runs with `ssr: false` (set in
+  `react-router.config.ts`); routes use `clientLoader` (not server `loader`) and
+  there is no Node server in production — the Go binary serves the static client
+  build and the API. The build still does a one-shot server pass to prerender
+  `index.html`, which is why `@react-router/node` and `isbot` are runtime
+  `dependencies` (not devDependencies).
 - **`BACKEND_URL` is hardcoded** to `http://127.0.0.1:56516/api` in
   `web/app/types.ts`. If you change the default port/host, or run the UI against
   a remote backend, this constant must change too. CORS on the backend currently
@@ -136,8 +154,10 @@ or point at an existing binary) so the dev UI has an API to call.
   the `routes.Backend` receiver; keep mdbx access inside `Env.View(...)` closures
   and always `defer cursor.Close()` / `defer Env.CloseDBI(...)`.
 - **TypeScript/React:** Prettier (config in `web/.prettierrc.json`, with the
-  Tailwind plugin) + ESLint (`web/.eslintrc.cjs`). Use the `~/*` import alias for
-  `web/app/*`. Styling is Tailwind utility classes.
+  Tailwind plugin) + ESLint flat config (`web/eslint.config.mjs`). Use the `~/*`
+  import alias for `web/app/*` (resolved natively by Vite + tsconfig `paths`).
+  Styling is Tailwind v4 utility classes; theme overrides live in
+  `app/tailwind.css` via `@theme` (there is no `tailwind.config.ts`).
 
 ## Reference
 

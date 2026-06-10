@@ -29,7 +29,7 @@ const ExpandedValue: FC<ExpandedValueProps> = ({
 
   return (
     <td
-      className="outline-3 border-l p-0 align-top"
+      className="border-l p-0 align-top outline-3"
       colSpan={maxDataColumns + 2}
     >
       <table className="w-max table-fixed">

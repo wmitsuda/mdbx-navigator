@@ -1,3 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Tailwind v4 CSS-first config: override the `font-mono` family so the
+   `font-mono` utility renders with Fira Mono, falling back to the default
+   monospace stack. */
+@theme {
+  --font-mono:
+    "Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}

@@ -1,10 +1,10 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+import { ClientLoaderFunctionArgs } from "react-router";
 import { hexlify } from "ethers";
 import invariant from "tiny-invariant";
 import { BACKEND_URL, DEFAULT_PAGE_SIZE, K, KV } from "~/types";
 import ResultsPage from "~/components/ResultsPage";
 
-export const clientLoader = async ({ params }: LoaderFunctionArgs) => {
+export const clientLoader = async ({ params }: ClientLoaderFunctionArgs) => {
   invariant(params.tableName !== undefined, "Missing table name");
 
   // TODO: add page size here

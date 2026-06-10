@@ -41,7 +41,7 @@ const CollapsedValue: FC<CollapsedValueProps> = ({
             className="border-l border-gray-300 px-1 align-baseline"
             colSpan={maxDataColumns - numDataColumns}
           >
-            <span className="whitespace-pre font-mono text-gray-400">
+            <span className="font-mono whitespace-pre text-gray-400">
               {getUint("0x" + rawCappedV)
                 .toLocaleString()
                 .padEnd(
@@ -64,7 +64,7 @@ const CollapsedValue: FC<CollapsedValueProps> = ({
               [...]
             </button>
           )}
-          <small className="text-nowrap font-mono text-xs text-gray-500">
+          <small className="font-mono text-xs text-nowrap text-gray-500">
             ({totalLen} {totalLen > 1 ? "bytes" : "byte"})
           </small>
         </div>

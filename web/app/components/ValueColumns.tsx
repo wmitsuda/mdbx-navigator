@@ -1,5 +1,5 @@
 import { FC, memo, useCallback } from "react";
-import { useFetcher } from "@remix-run/react";
+import { useFetcher } from "react-router";
 import { clientLoader } from "~/routes/value.$tableName.$k.$dupIdx";
 import CollapsedValue from "./CollapsedValue";
 import ExpandedValue from "./ExpandedValue";

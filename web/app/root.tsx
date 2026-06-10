@@ -1,13 +1,7 @@
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-} from "@remix-run/react";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
 import "./tailwind.css";
-import "@fontsource/fira-mono";
+import "@fontsource/fira-mono/index.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
